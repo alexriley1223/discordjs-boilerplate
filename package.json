@@ -1,0 +1,31 @@
+{
+  "name": "discordjs-boilerplate",
+  "version": "1.0.0",
+  "description": "Boilerplate for Discord.js bots",
+  "main": "app.js",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development node app.js",
+    "prod": "cross-env NODE_ENV=production node app.js",
+    "registerdev": "cross-env NODE_ENV=development node register-commands.js",
+    "unregisterdev": "cross-env NODE_ENV=development node unregister-commands.js",
+    "registerprod": "cross-env NODE_ENV=production node register-commands.js",
+    "unregisterprod": "cross-env NODE_ENV=production node unregister-commands.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexriley1223/discordjs-boilerplate.git"
+  },
+  "author": "alexriley1223 <alexriley1223@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alexriley1223/discordjs-boilerplate/issues"
+  },
+  "homepage": "https://github.com/alexriley1223/discordjs-boilerplate#readme",
+  "dependencies": {
+    "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
+  }
+}
