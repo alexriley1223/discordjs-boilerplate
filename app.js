@@ -1,18 +1,23 @@
 const fs = require('fs');
 const path = require('path');
-const { REST } = require('@discordjs/rest');
-const { Routes } = require('discord-api-types/v9');
+const { Client, Collection } = require('discord.js');
 
 require('dotenv').config({
     path: path.join(__dirname, '.env'),
-})
+});
 
 const commandPath = './commands';
-const commands = [];
 
 const token = process.env.NODE_ENV === 'development' ? process.env.DEV_TOKEN : process.env.PROD_TOKEN;
-const clientId = process.env.NODE_ENV === 'development' ? process.env.DEV_CLIENT : process.env.PROD_CLIENT;
-const guildId = process.env.NODE_ENV === 'development' ? process.env.DEV_GUILD : process.env.PROD_GUILD;
+
+// Initiate client
+const client = new Client({ intents: []});
+
+// Initiate events from ./events folder
+var eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
+
+// Initiate commands from ./commands folder
+client.commands = new Collection();
 
 /*
 	* Recursively pulls all files from directory
@@ -35,27 +40,27 @@ const getAllCommands = function(dirPath, arrayOfCommands) {
     return arrayOfCommands;
 }
 
+// Recursively pull all commands from commandPath folder and subfolders
 const commandFiles = getAllCommands(commandPath);
 
-// Pull JSON data from each command file to register with Discord
+/* Cycle enabled commands and add each command to collection */
 for (const file of commandFiles) {
 	const command = require(`./${file}`);
-	commands.push(command.data.toJSON());
+	// Set a new item in the Collection
+	// With the key as the command name and the value as the exported module
+	client.commands.set(command.data.name, command);
 }
 
-// Register with Discord
-const rest = new REST({ version: '9' }).setToken(token);
-(async () => {
-	try {
-		console.log(`Started registering application (/) commands for ${process.env.NODE_ENV}.`);
+/* Cycle enabled events and execute on event call */
+for (const file of eventFiles) {
+	const event = require(`./events/${file}`);
 
-		await rest.put(
-			Routes.applicationGuildCommands(clientId, guildId),
-			{ body: commands },
-		);
-
-		console.log(`Successfully registered application (/) commands for ${process.env.NODE_ENV}`);
-	} catch (error) {
-		console.error(error);
+	if (event.once) {
+		client.once(event.name, (...args) => event.execute(...args));
+	} else {
+		client.on(event.name, (...args) => event.execute(...args));
 	}
-})();
+}
+
+// Login bot
+client.login(token);
